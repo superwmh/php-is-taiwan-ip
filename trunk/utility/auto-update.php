@@ -1,8 +1,30 @@
 <?php
 
+function fetch_data() {
+  $ch = curl_init("http://ip-to-country.webhosting.info/downloads/ip-to-country.csv.zip");
+  curl_setopt($ch, CURLOPT_HEADER, FALSE);
+  curl_setopt($ch, CURLOPT_POST, FALSE);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+  curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
+  curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
+  curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+  curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+  curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
+  $fileContent = curl_exec($ch);
+  if (curl_getinfo($ch, CURLINFO_HTTP_CODE) == 200) {
+    file_put_contents('ip-to-country.csv.gz', $fileContent);
+  }
+  curl_close($ch);
+}
+
+function decompress_data() {
+  $cmd = 'gzip -d ip-to-country.csv.gz';
+  system($cmd);
+}
+
 function convert_data() {
   $input_file = 'ip-to-country.csv';
-  $output_file = 'is_taiwan_ip.php';
+  $output_file = '../is_taiwan_ip_new.php';
   if (!$ifp = fopen($input_file, 'rb')) {
     echo "Can not read the file!\n";
     return FALSE;
@@ -47,6 +69,8 @@ function is_taiwan_ip($ip) {
   fclose($ifp);
 }
 
+fetch_data();
+decompress_data();
 convert_data();
 
 ?>
